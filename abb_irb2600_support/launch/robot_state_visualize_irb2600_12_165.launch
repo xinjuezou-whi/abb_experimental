@@ -6,22 +6,29 @@
 
   Usage:
     robot_state_visualize_irb2600_12_165.launch robot_ip:=<value>
+	
+  Update log:
+    - Add condition group for viewing URDF by xinjue.zou.whi@gmail.com
 -->
 <launch>
-  <arg name="robot_ip" doc="IP of the controller" />
-  <arg name="J23_coupled" default="false" doc="If true, compensate for J2-J3 parallel linkage" />
+  <arg name="robot_ip" default="" doc="IP of the controller"/>
+  <arg name="J23_coupled" default="false" doc="If true, compensate for J2-J3 parallel linkage"/>
 
-  <rosparam command="load" file="$(find abb_irb2600_support)/config/joint_names_irb2600_12_165.yaml" />
+  <rosparam command="load" file="$(find abb_irb2600_support)/config/joint_names_irb2600_12_165.yaml"/>
 
-  <include file="$(find abb_driver)/launch/robot_interface.launch">
-    <arg name="robot_ip"    value="$(arg robot_ip)" />
-    <arg name="J23_coupled" value="$(arg J23_coupled)" />
-  </include>
+  <group unless="$(eval arg('robot_ip') == '')">
+    <include file="$(find abb_driver)/launch/robot_interface.launch">
+      <arg name="robot_ip"    value="$(arg robot_ip)"/>
+      <arg name="J23_coupled" value="$(arg J23_coupled)"/>
+    </include>
+  </group>
+  <group if="$(eval arg('robot_ip') == '')">
+    <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+  </group>
 
-  <node name="robot_state_publisher" pkg="robot_state_publisher"
-    type="robot_state_publisher" />
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 
-  <include file="$(find abb_irb2600_support)/launch/load_irb2600_12_165.launch" />
+  <include file="$(find abb_irb2600_support)/launch/load_irb2600_12_165.launch"/>
 
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find industrial_robot_client)/config/robot_state_visualize.rviz" required="true" />
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find industrial_robot_client)/config/robot_state_visualize.rviz" required="true"/>
 </launch>
